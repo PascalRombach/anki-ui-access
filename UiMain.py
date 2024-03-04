@@ -148,6 +148,7 @@ class Ui:
             self._visMapSurf = self.genGrid(visMap,mapSurf)
         if self._design.ShowOutlines:
             pygame.draw.rect(self._visMapSurf,self._design.Line,(0,0,len(visMap)*100, len(visMap[0])*100),self._design.LineWidth)
+        return mapSurf
     
     #infos for cars
     def _blitCarInfoOnSurface(self, surf: pygame.Surface, text: str, dest: tuple[int, int]):
@@ -325,6 +326,8 @@ class Ui:
     #The Code that showeth the Ui (:D)
     def _UiThread(self):
         self.gen_MapSurface(self._visMap)
+        # flipped, _ = flip_h(self._visMap, [])
+        flipped = self._visMap
         self._eventSurf = pygame.Surface((
             self._visMapSurf.get_width(),
             self._design.ConsoleHeight
@@ -345,6 +348,8 @@ class Ui:
         
         self._uiSetupComplete.set_result(True)
         clock = pygame.time.Clock()
+        Kurve = load_image("Kurve.png")
+        
         while(self._run and self.showUi):
             self.updateUi()
             
@@ -370,6 +375,21 @@ class Ui:
             Ui.blit(self._ControlButtonSurf,(0,0))# type: ignore
             Ui.blit(self._ScrollSurf,(self._visMapSurf.get_width()-self._ScrollSurf.get_width(),0))# type: ignore
             
+            y = 300
+            for r in range(4):
+                Ui.fill((0,0,0), (r*100,y,100,100))
+                Ui.blit(
+                    pygame.transform.rotate(Kurve, r*90),
+                    (r*100,y)
+                )
+                Ui.blit(
+                    self._font.render(
+                        str(r*90), True, (255, 255, 255)
+                    ),
+                    (r*100, y)
+                )
+            
+            Ui.blit(self.gen_MapSurface(flipped), (400, 0))
             pygame.display.update()
             clock.tick(self.fps)
     

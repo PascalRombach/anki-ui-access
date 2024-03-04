@@ -94,8 +94,7 @@ def orientation_to_rotation(
                 (orientation,_invert_orientation(previous_orientation))
             ]
         except KeyError:
-            # Any version with reversed conditions 
-            # has the same rotation
+            # Any version with reversed conditions has the same rotation
             rotation = _CURVE_ROTATIONS_LOOKUP[
                 (_invert_orientation(previous_orientation),orientation)
             ]
@@ -196,8 +195,14 @@ def generate(
     return vismap, position_tracker
     pass
 
+ROTATION_FLIP_MAP = {
+    0: 90,
+    90: 0,
+    180: 270,
+    270: 180
+}
 def h_rotation_flip(r: int) -> int: 
-    return 90 - (r%180) + (r//180)*180
+    return r
 
 def flip_h(
     vismap: Vismap, 
