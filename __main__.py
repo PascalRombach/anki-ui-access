@@ -17,9 +17,8 @@ async def main():
     async with anki.Controller() as control:
         autos = await control.connect_many(1)
         #autos[0]._position = 0
-        await control.scan()
-        with Ui(list(autos),control.map,(1,0),False,fps=10,
-                vehicleColors=[(255,0,0)]) as Uiob:
+        await control.scan() # type: ignore
+        with Ui.fromController(control, orientation=(0, -1), flip=(False, True)) as Uiob:
             await Uiob.waitForSetupAsync() # Ensure addEvent is called only after successful setup.
             Uiob.addEvent("test")
             while True:
