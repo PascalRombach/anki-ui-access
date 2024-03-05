@@ -46,7 +46,13 @@ class Ui:
             for _ in range(len(vehicles))
         ]
         self._customLanes = customLanes + anki.Lane3.getAll() + anki.Lane4.getAll()
-        self._laneSystem = BaseLane("CustomLanes",{lane.name:lane.value for lane in self._customLanes})
+        self._laneSystem: type[BaseLane] = BaseLane( # type: ignore
+            "CustomLanes",
+            {
+                lane.name:lane.value 
+                for lane in self._customLanes
+            }
+        )
         #setting up map
         flip_horizontal = flip[0]
         if flip[1]:
@@ -71,15 +77,13 @@ class Ui:
         pygame.init()
         self._font = pygame.font.SysFont(design.Font, design.FontSize)
         # integrated event logging
-        self._eventSurf: pygame.Surface|None = None
+        self._eventSurf: pygame.Surface
         #Ui surfaces
-        self.UiSurf: pygame.Surface|None = None
-        self._visMapSurf: pygame.Surface|None = None
-        self._ControlButtonSurf: pygame.Surface|None = None
-        self._ScrollSurf: pygame.Surface|None = None
-        self._rects: tuple[pygame.rect.Rect|None,pygame.rect.Rect|None,pygame.rect.Rect|None] = (
-            None, None, None
-        )
+        self.UiSurf: pygame.Surface
+        self._visMapSurf: pygame.Surface
+        self._ControlButtonSurf: pygame.Surface
+        self._ScrollSurf: pygame.Surface
+        self._rects: tuple[pygame.rect.Rect,pygame.rect.Rect,pygame.rect.Rect]
         #starting ui
         self._thread = threading.Thread(target=self._UiThread,daemon=True)
         self._run = True
@@ -181,7 +185,7 @@ class Ui:
             surf.fill(self._design.CarInfoFill)
             self._blitCarInfoOnSurface(surf, f"Invalid information:", (0,0))
             self._blitCarInfoOnSurface(surf, f"{e}", (0,1))
-            warnings.warn(e)
+            warnings.warn(str(e))
         if self._design.ShowOutlines:
             pygame.draw.rect(surf,self._design.Line,surf.get_rect(),self._design.LineWidth)
         return surf
@@ -223,6 +227,9 @@ class Ui:
         
         surf = pygame.surface.Surface(self._visMapSurf.get_size(),pygame.SRCALPHA)
         for carNum, car in enumerate(self._vehicles):
+            if car.map_position is None or car.road_offset is None or car.current_track_piece is None:
+                # Don't show misaligned or pre-empted vehicles.
+                continue
             x, y, i = self._lookup[car.map_position]
             laneOffset = (car.road_offset / 60)*(20-5)
             piece: Element = self._visMap[x][y][i]
