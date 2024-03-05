@@ -84,12 +84,13 @@ class Ui:
         self._ScrollSurf: pygame.Surface
         self._rects: tuple[pygame.Rect, pygame.Rect, pygame.Rect]
         #starting ui
-        self._thread = threading.Thread(target=self._UiThread,daemon=True)
+        self._thread = threading.Thread(target=self.__eventWrapper,daemon=True)
         self._run = True
         self._thread.start()
         # concurrent.futures doesn not see the potential of manually created futures
         # too bad!
         self._uiSetupComplete = concurrent.futures.Future()
+        self._endFuture = concurrent.futures.Future()
         #getting eventloop and starting ControlWindow
         self._eventLoop = asyncio.get_running_loop()
         self._controlThread = None
@@ -402,6 +403,17 @@ class Ui:
             clock.tick(self.fps)
     
     
+    def __eventWrapper(self):
+        try:
+            self._UiThread()
+        except Exception as e:
+            self._endFuture.set_exception(e)
+        else:
+            self._endFuture.set_result(True)
+        finally:
+            if not self._endFuture.done():
+                self._endFuture.set_result(False)
+    
     
     #methods for user interaction
     def kill(self):
@@ -478,12 +490,27 @@ class Ui:
             )
             self._controlThread.start()
     
-    def waitForFinish(self, timeout: float|None=None) -> bool:
-        self._thread.join(timeout)
-        return self._thread.is_alive()
+    def waitForFinish(self, timeout: float|None=None, *, ignoreExceptions: bool = False) -> bool:
+        try:
+            return self._endFuture.result(timeout)
+        except TimeoutError:
+            raise
+        except Exception:
+            if not ignoreExceptions:
+                raise
+            else:
+                return False
     
-    async def waitForFinishAsync(self, timeout: float|None=None) -> bool:
-        return await asyncio.get_running_loop().run_in_executor(None,self.waitForFinish,timeout)
+    async def waitForFinishAsync(self, timeout: float|None=None, *, ignoreExceptions: bool = False) -> bool:
+        try:
+            return await asyncio.wait_for(asyncio.wrap_future(self._endFuture), timeout)
+        except TimeoutError:
+            raise
+        except Exception:
+            if not ignoreExceptions:
+                raise
+            else:
+                return False
     
     def waitForSetup(self, timeout: float|None=None) -> bool:
         return self._uiSetupComplete.result(timeout)
