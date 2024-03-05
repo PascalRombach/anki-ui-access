@@ -119,24 +119,24 @@ class Ui:
             drawGridLine((0,y*100), (len(visMap)*100,y*100))
         return mapsurf
     def gen_MapSurface(self, visMap: Vismap):
-        Gerade = load_image(relpath="straight.png")
-        Kurve = load_image("curve.png")
-        Kreuzung = load_image("intersection.png")
-        Start = load_image("start.png")
+        imStraight = load_image("straight.png")
+        imCurve = load_image("curve.png")
+        imIntersection = load_image("intersection.png")
+        imStart = load_image("start.png")
         mapSurf = pygame.surface.Surface((len(visMap)*100, len(visMap[0])*100),pygame.SRCALPHA)
         for (i, y, x), current in enumerated_flatten(visMap):
             current: Element
             match current.piece.type:
                 case TrackPieceType.STRAIGHT:
-                    Gerade.set_alpha(int((1.5**-i)*255))
+                    imStraight.set_alpha(int((1.5**-i)*255))
                     mapSurf.blit(
-                        rotateSurf(Gerade,current.orientation,90),
+                        rotateSurf(imStraight,current.orientation,90),
                         (x*100,y*100)
                     )
                     # mapSurf.blit(self._font.render(f"{current.orientation}",True,(100,100,100)),(x*100,y*100))
                 case TrackPieceType.CURVE:
-                    Kurve.set_alpha(int((1.5**-i)*255))
-                    mapSurf.blit(pygame.transform.rotate(Kurve,float(current.rotation)),(x*100,y*100)) # type: ignore
+                    imCurve.set_alpha(int((1.5**-i)*255))
+                    mapSurf.blit(pygame.transform.rotate(imCurve,float(current.rotation)),(x*100,y*100)) 
                     #mapSurf.blit(self._font.render(
                     #    f"{current.rotation} {current.orientation} {int(current.flipped) if current.flipped is not None else '/'}",
                     #    True,
@@ -144,11 +144,11 @@ class Ui:
                     #),(x*100,y*100))
                 case TrackPieceType.INTERSECTION:
                     if current.orientation[0] != 0:
-                        Kreuzung.set_alpha(int((1.5**-i)*255))
-                        mapSurf.blit(Kreuzung, (x*100,y*100))
+                        imIntersection.set_alpha(int((1.5**-i)*255))
+                        mapSurf.blit(imIntersection, (x*100,y*100))
                 case TrackPieceType.START:
-                    Start.set_alpha(int((1.5**-i)*255))
-                    mapSurf.blit(rotateSurf(Start,current.orientation,90),(x*100,y*100))
+                    imStart.set_alpha(int((1.5**-i)*255))
+                    mapSurf.blit(rotateSurf(imStart,current.orientation,90),(x*100,y*100))
                     # mapSurf.blit(self._font.render(f"{current.orientation}",True,(100,100,100)),(x*100,y*100))
                 case TrackPieceType.FINISH:
                     pass
