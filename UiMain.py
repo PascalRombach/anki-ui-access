@@ -93,7 +93,7 @@ class Ui:
         self._eventLoop = asyncio.get_running_loop()
         self._controlThread = None
         if showControler:
-            self.startControler()
+            self.startVehicleControlUI()
         
         self._carIMG = load_image("vehicle.png")
     
@@ -364,7 +364,7 @@ class Ui:
                     self._run = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if rects[0].collidepoint(pygame.mouse.get_pos()):
-                        self.startControler()
+                        self.startVehicleControlUI()
                     if rects[1].collidepoint(pygame.mouse.get_pos()):
                         carInfoOffset = min(max(carInfoOffset+1,0),len(self._vehicles)-1)
                     if rects[2].collidepoint(pygame.mouse.get_pos()):
@@ -450,7 +450,7 @@ class Ui:
         self._vehicles.pop(index)
         self._accumulatedVehicleColors.pop(index)
     
-    def startControler(self): #modify starting condition
+    def startVehicleControlUI(self): #modify starting condition
         if self._controlThread is None or not self._controlThread.is_alive():
             self._controlThread = threading.Thread(
                 target=vehicleControler,
