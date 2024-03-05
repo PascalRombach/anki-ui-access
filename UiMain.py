@@ -188,15 +188,20 @@ class Ui:
             pygame.draw.rect(surf,self._design.Line,surf.get_rect(),self._design.LineWidth)
         return surf
     def carOnMap(self) ->pygame.Surface:
-        mapping = []
-        for x in range(len(self._visMap)):
-            mapping.append([])
-            for y in range(len(self._visMap[x])):
-                mapping[x].append([])
+        mapping = [
+            [
+                []
+                for _ in range(len(column))
+            ]
+            for column in self._visMap
+        ]
         
         surf = pygame.surface.Surface(self._visMapSurf.get_size(),pygame.SRCALPHA)
-        for i in range(len(self._vehicles)):
-            x, y, _ = self._lookup[self._vehicles[i].map_position] # type: ignore
+        for i, vehicle in enumerate(self._vehicles):
+            if vehicle.map_position is None:
+                # Disregard unaligned vehicles
+                continue
+            x, y, _ = self._lookup[vehicle.map_position]
             mapping[x][y].append(i)
         
         for x, column in enumerate(mapping):
