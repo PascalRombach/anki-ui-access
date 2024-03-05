@@ -93,7 +93,7 @@ class Ui:
         if showControler:
             self.startControler()
         
-        self._carIMG = load_image(relative_to_file("Fahrzeug.png"))
+        self._carIMG = load_image("Fahrzeug.png")
     
     @classmethod
     def fromController(cls,

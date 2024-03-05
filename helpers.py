@@ -14,7 +14,9 @@ def relative_to_file(relpath: str) -> str:
     )
 
 def load_image(relpath: str):
-    return pygame.image.load(relative_to_file(relpath))
+    return pygame.image.load(relative_to_file(
+        os.path.join("images", relpath)
+    ))
 
 def rotateSurf(surf: pygame.Surface, orientation: tuple[int,int],addition:int=0) -> pygame.Surface:
     return pygame.transform.rotate(
