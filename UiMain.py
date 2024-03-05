@@ -29,7 +29,7 @@ class Ui:
             orientation: tuple[int, int] = (1,0),
             flip: tuple[bool, bool] = (False, False),
             showUi: bool = True,
-            showControler: bool = False,
+            showController: bool = False,
             fps: int = 10,
             customLanes: list[BaseLane] = [], 
             design: Design = Design(),
@@ -93,7 +93,7 @@ class Ui:
         #getting eventloop and starting ControlWindow
         self._eventLoop = asyncio.get_running_loop()
         self._controlThread = None
-        if showControler:
+        if showController:
             self.startVehicleControlUI()
         
         self._carIMG = load_image("vehicle.png")
