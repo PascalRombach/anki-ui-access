@@ -380,11 +380,11 @@ class Ui:
                         len(self._vehicles)-1
                     )
             
-            if(Ui.get_size() != self.UiSurf.get_size()):# type: ignore
+            if(Ui.get_size() != self.UiSurf.get_size()):
                 Ui = pygame.display.set_mode(self.UiSurf.get_size(),pygame.SCALED)
-            Ui.blit(self.UiSurf,(0,0))# type: ignore
-            Ui.blit(self._ControlButtonSurf,(0,0))# type: ignore
-            Ui.blit(self._ScrollSurf,(self._visMapSurf.get_width()-self._ScrollSurf.get_width(),0))# type: ignore
+            Ui.blit(self.UiSurf,(0,0))
+            Ui.blit(self._ControlButtonSurf,(0,0))
+            Ui.blit(self._ScrollSurf,(self._visMapSurf.get_width()-self._ScrollSurf.get_width(),0))
             
             pygame.display.update()
             clock.tick(self.fps)
