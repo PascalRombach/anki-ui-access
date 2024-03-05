@@ -93,7 +93,7 @@ class Ui:
         if showControler:
             self.startControler()
         
-        self._carIMG = load_image("Fahrzeug.png")
+        self._carIMG = load_image("vehicle.png")
     
     @classmethod
     def fromController(cls,
@@ -117,10 +117,10 @@ class Ui:
             drawGridLine((0,y*100), (len(visMap)*100,y*100))
         return mapsurf
     def gen_MapSurface(self, visMap: Vismap):
-        Gerade = load_image(relpath="Gerade.png")
-        Kurve = load_image("Kurve.png")
-        Kreuzung = load_image("Kreuzung.png")
-        Start = load_image("Start.png")
+        Gerade = load_image(relpath="straight.png")
+        Kurve = load_image("curve.png")
+        Kreuzung = load_image("intersection.png")
+        Start = load_image("start.png")
         mapSurf = pygame.surface.Surface((len(visMap)*100, len(visMap[0])*100),pygame.SRCALPHA)
         for (i, y, x), current in enumerated_flatten(visMap):
             current: Element
@@ -342,7 +342,7 @@ class Ui:
             self._visMapSurf.get_height() + self._design.ConsoleHeight
         )
         if self.showUi:
-            Logo = load_image("Logo.png")
+            Logo = load_image("logo.png")
             pygame.display.set_icon(Logo)
             pygame.display.set_caption("Anki Ui Access")
             self._ControlButtonSurf, self._ScrollSurf = self.gen_Buttons()
