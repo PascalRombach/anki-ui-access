@@ -118,7 +118,7 @@ class Ui:
         for y in range(1,len(visMap[0])):
             drawGridLine((0,y*100), (len(visMap)*100,y*100))
         return mapsurf
-    def gen_MapSurface(self, visMap: Vismap):
+    def genMapSurface(self, visMap: Vismap):
         imStraight = load_image("straight.png")
         imCurve = load_image("curve.png")
         imIntersection = load_image("intersection.png")
@@ -277,7 +277,7 @@ class Ui:
                 #                  y*100 + 100* direction[1] + curveOffset[1]*laneOffset),2)
         return surf
 
-    def gen_Buttons(self):
+    def genButtons(self):
         # NOTE: Pygame sucks. You can't render fonts with translucent background.
         # You _can_ render fonts with transparent background though, 
         # so this blitting nonsense works while a background colour doesn't.
@@ -339,7 +339,7 @@ class Ui:
     
     #The Code that showeth the Ui (:D)
     def _UiThread(self):
-        self.gen_MapSurface(self._visMap)
+        self.genMapSurface(self._visMap)
         self._eventSurf = pygame.Surface((
             self._visMapSurf.get_width(),
             self._design.ConsoleHeight
@@ -354,7 +354,7 @@ class Ui:
             Logo = load_image("logo.png")
             pygame.display.set_icon(Logo)
             pygame.display.set_caption("Anki Ui Access")
-            ((self._ControlButtonSurf, self._ScrollSurf), rects) = self.gen_Buttons()
+            ((self._ControlButtonSurf, self._ScrollSurf), rects) = self.genButtons()
             Ui = pygame.display.set_mode(uiSize, pygame.SCALED)
         self.UiSurf = pygame.surface.Surface(uiSize)
         carInfoOffset = 0
@@ -422,12 +422,12 @@ class Ui:
     def getEventSurf(self) -> pygame.Surface:
         return self._eventSurf
     def updateDesign(self):
-        self.gen_MapSurface(self._visMap)
+        self.genMapSurface(self._visMap)
         self.UiSurf = pygame.surface.Surface(
             (self._visMapSurf.get_width() + self.getCarSurfs()[0].get_width(),
                 self._visMapSurf.get_height() + self._design.ConsoleHeight))
         if(self.showUi):
-            self._ControlButtonSurf, self._ScrollSurf = self.gen_Buttons()
+            self._ControlButtonSurf, self._ScrollSurf = self.genButtons()
         
         old_eventSurf = self._eventSurf
         # TODO: Fix code duplication with _UiThread
