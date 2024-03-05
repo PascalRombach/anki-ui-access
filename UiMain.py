@@ -489,6 +489,8 @@ class Ui:
                 daemon=True
             )
             self._controlThread.start()
+        else:
+            warnings.warn("Attempted to start vehicle control window while already open", RuntimeWarning)
     
     def waitForFinish(self, timeout: float|None=None, *, ignoreExceptions: bool = False) -> bool:
         try:
