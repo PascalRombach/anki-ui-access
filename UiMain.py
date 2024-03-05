@@ -26,18 +26,18 @@ class Ui:
     def __init__(self,
             vehicles: list[anki.Vehicle], 
             map,
-            orientation: tuple[int,int] = (1,0),
+            orientation: tuple[int, int] = (1,0),
             flip: tuple[bool, bool] = (False, False),
             showUi: bool = True,
             showControler: bool = False,
             fps: int = 10,
             customLanes: list[BaseLane] = [], 
             design: Design = Design(),
-            vehicleColors: Iterable[tuple[int,int,int]] = []
+            vehicleColors: Iterable[tuple[int, int, int]] = []
         ) -> None:
         self._vehicleColorIterator = itertools.chain(
             iter(vehicleColors), 
-            itertools.repeat((255,255,255))
+            itertools.repeat((255, 255, 255))
         )
         #Loading vehicles and Lanes
         self._vehicles = vehicles
@@ -49,7 +49,7 @@ class Ui:
         self._laneSystem: type[BaseLane] = BaseLane( # type: ignore
             "CustomLanes",
             {
-                lane.name:lane.value 
+                lane.name : lane.value 
                 for lane in self._customLanes
             }
         )
@@ -82,7 +82,7 @@ class Ui:
         self._visMapSurf: pygame.Surface
         self._ControlButtonSurf: pygame.Surface
         self._ScrollSurf: pygame.Surface
-        self._rects: tuple[pygame.rect.Rect,pygame.rect.Rect,pygame.rect.Rect]
+        self._rects: tuple[pygame.Rect, pygame.Rect, pygame.Rect]
         #starting ui
         self._thread = threading.Thread(target=self._UiThread,daemon=True)
         self._run = True
@@ -106,7 +106,7 @@ class Ui:
         return cls(list(controller.vehicles), controller.map, **kwargs)
     
     #generating vismap
-    def genGrid(self,visMap,mapsurf)-> pygame.Surface:
+    def genGrid(self, visMap, mapsurf) -> pygame.Surface:
         drawGridLine = lambda start, end: pygame.draw.line(
             mapsurf,
             self._design.Line,
@@ -115,9 +115,9 @@ class Ui:
             self._design.LineWidth
         )
         for x in range(1,len(visMap)):
-            drawGridLine((x*100,0), (x*100,len(visMap[x])*100))
+            drawGridLine((x*100, 0), (x*100, len(visMap[x])*100))
         for y in range(1,len(visMap[0])):
-            drawGridLine((0,y*100), (len(visMap)*100,y*100))
+            drawGridLine((0, y*100), (len(visMap)*100, y*100))
         return mapsurf
     def genMapSurface(self, visMap: Vismap):
         imStraight = load_image("straight.png")
@@ -137,7 +137,7 @@ class Ui:
                     # mapSurf.blit(self._font.render(f"{current.orientation}",True,(100,100,100)),(x*100,y*100))
                 case TrackPieceType.CURVE:
                     imCurve.set_alpha(int((1.5**-i)*255))
-                    mapSurf.blit(pygame.transform.rotate(imCurve,float(current.rotation)),(x*100,y*100)) 
+                    mapSurf.blit(pygame.transform.rotate(imCurve, float(current.rotation)), (x*100, y*100)) 
                     #mapSurf.blit(self._font.render(
                     #    f"{current.rotation} {current.orientation} {int(current.flipped) if current.flipped is not None else '/'}",
                     #    True,
@@ -157,16 +157,23 @@ class Ui:
         if self._design.ShowGrid:
             self._visMapSurf = self.genGrid(visMap,mapSurf)
         if self._design.ShowOutlines:
-            pygame.draw.rect(self._visMapSurf,self._design.Line,(0,0,len(visMap)*100, len(visMap[0])*100),self._design.LineWidth)
+            pygame.draw.rect(
+                self._visMapSurf,
+                self._design.Line,
+                (0, 0, len(visMap)*100, len(visMap[0])*100),
+                self._design.LineWidth
+            )
     
     #infos for cars
     def _blitCarInfoOnSurface(self, surf: pygame.Surface, text: str, dest: tuple[int, int]):
         surf.blit(
             self._font.render(text, True, self._design.Text),
-            (10+dest[0]*300,
-            10+self._design.FontSize*dest[1])
+            (
+                10+dest[0]*300,
+                10+dest[1]*self._design.FontSize
+            )
         )
-    def carInfo(self, vehicle: anki.Vehicle, number:int) -> pygame.Surface:
+    def carInfo(self, vehicle: anki.Vehicle, number: int) -> pygame.Surface:
         surf = pygame.surface.Surface((CAR_INFO_WIDTH,20+self._design.FontSize*4))
         surf.fill(self._design.CarInfoFill)
         try:
@@ -222,7 +229,7 @@ class Ui:
                     #pygame.draw.rect(surf,(0,0,0),(x*100+100-10*(i+1),y*100+90,10,10),1)
         return surf
     def carOnStreet(self) -> pygame.Surface:
-        rotationToDirection:dict[int,tuple[int,int]]= {
+        rotationToDirection: dict[int,tuple[int,int]] = {
             0: (1,0),
             90: (0,0),
             180: (0,1),
@@ -235,23 +242,26 @@ class Ui:
                 # Don't show misaligned or pre-empted vehicles.
                 continue
             x, y, i = self._lookup[car.map_position]
-            laneOffset = (car.road_offset / 60)*(20-5)
+            laneOffset = (car.road_offset / 60)*(20 - 5)
             piece: Element = self._visMap[x][y][i]
             orientation = piece.orientation
 
             carImage = self._carIMG.copy()
-            carImage.fill(self._accumulatedVehicleColors[carNum],None,pygame.BLEND_RGB_MULT)
+            carImage.fill(self._accumulatedVehicleColors[carNum], None, pygame.BLEND_RGB_MULT)
             if car.current_track_piece.type is not TrackPieceType.CURVE:
                 surf.blit(
-                    rotateSurf(carImage,orientation,-90),
-                    (x*100+40+laneOffset*-orientation[1],
-                     y*100+40+laneOffset*orientation[0]))
+                    rotateSurf(carImage, orientation, -90),
+                    (
+                        x*100+40-laneOffset*orientation[1],
+                        y*100+40+laneOffset*orientation[0]
+                    )
+                )
             else:
                 laneOffset *= -1 if piece.piece.clockwise else 1
                 laneOffset += 50
                 direction = rotationToDirection[piece.rotation]
                 rotation = math.radians(piece.rotation)
-                curveOffset = (-math.cos(math.pi/4+rotation),math.sin(math.pi/4+rotation))
+                curveOffset = (-math.cos(math.pi/4+rotation), math.sin(math.pi/4+rotation))
                 carImage = pygame.transform.rotate(
                     carImage,
                     piece.rotation - 135 + (180 if piece.piece.clockwise else 0)
@@ -259,8 +269,8 @@ class Ui:
                 surf.blit(
                     carImage,
                     (
-                        x*100 -carImage.get_width()/2  + 100* direction[0] + curveOffset[0]*laneOffset,
-                        y*100 -carImage.get_height()/2 + 100* direction[1] + curveOffset[1]*laneOffset
+                        x*100 - carImage.get_width()/2  + 100*direction[0] + curveOffset[0]*laneOffset,
+                        y*100 - carImage.get_height()/2 + 100*direction[1] + curveOffset[1]*laneOffset
                     )
                 )
                 # TODO: Remove this when no longer required (added for testing purposes)
@@ -282,8 +292,8 @@ class Ui:
         # NOTE: Pygame sucks. You can't render fonts with translucent background.
         # You _can_ render fonts with transparent background though, 
         # so this blitting nonsense works while a background colour doesn't.
-        BtnText = self._font.render("Controller",True,self._design.Text)
-        Button = pygame.surface.Surface(BtnText.get_size(),pygame.SRCALPHA)
+        BtnText = self._font.render("Controller", True, self._design.Text)
+        Button = pygame.surface.Surface(BtnText.get_size(), pygame.SRCALPHA)
         Button.fill(self._design.ButtonFill)
         BtnRect = BtnText.get_rect()
         if self._design.ShowOutlines:
@@ -309,17 +319,17 @@ class Ui:
             pygame.SRCALPHA
         )
         ScrollSurf.fill(self._design.ButtonFill)
-        ScrollSurf.blit(UpArrow,(0,0))
-        ScrollSurf.blit(DownArrow,(0,UpArrow.get_height()))
+        ScrollSurf.blit(UpArrow, (0, 0))
+        ScrollSurf.blit(DownArrow, (0, UpArrow.get_height()))
         
-        return (Button,ScrollSurf), (BtnRect,UpRect,DownRect)
+        return (Button, ScrollSurf), (BtnRect, UpRect, DownRect)
     
     
     def updateUi(self, carInfoOffset: int, surf: pygame.Surface):
         surf.fill(self._design.Background)
-        surf.blit(self._visMapSurf,(0,0))
+        surf.blit(self._visMapSurf, (0, 0))
         
-        surf.blit(self._eventSurf,(0,self._visMapSurf.get_height()))
+        surf.blit(self._eventSurf, (0, self._visMapSurf.get_height()))
         if self._design.ShowOutlines:
             pygame.draw.rect(
                 self._eventSurf,
@@ -331,12 +341,12 @@ class Ui:
         carInfoSurfs = self.getCarSurfs()
         carInfoSurfs = carInfoSurfs[carInfoOffset:]
         for i, carInfoSurf in enumerate(carInfoSurfs):
-            surf.blit(carInfoSurf,(self._visMapSurf.get_width(),carInfoSurf.get_height()*i))
+            surf.blit(carInfoSurf, (self._visMapSurf.get_width(), carInfoSurf.get_height()*i))
         
         if(self._design.ShowCarNumOnMap):
-            surf.blit(self.carOnMap(),(0,0))
+            surf.blit(self.carOnMap(), (0, 0))
         if(self._design.ShowCarOnStreet):
-            surf.blit(self.carOnStreet(),(0,0))
+            surf.blit(self.carOnStreet(), (0, 0))
         return surf
     
     #The Code that showeth the Ui (:D)
@@ -347,7 +357,7 @@ class Ui:
             self._design.ConsoleHeight
         ))
         self._eventSurf.fill(self._design.EventFill)
-        self.addEvent("Started Ui",self._design.Text)
+        self.addEvent("Started Ui", self._design.Text)
         uiSize = (
             self._visMapSurf.get_width() + CAR_INFO_WIDTH,
             self._visMapSurf.get_height() + self._design.ConsoleHeight
@@ -373,20 +383,20 @@ class Ui:
                     if self._rects[0].collidepoint(pygame.mouse.get_pos()):
                         self.startVehicleControlUI()
                     if self._rects[1].collidepoint(pygame.mouse.get_pos()):
-                        self._carInfoOffset = min(max(self._carInfoOffset+1,0),len(self._vehicles)-1)
+                        self._carInfoOffset = min(max(self._carInfoOffset+1, 0), len(self._vehicles)-1)
                     if self._rects[2].collidepoint(pygame.mouse.get_pos()):
-                        self._carInfoOffset = min(max(self._carInfoOffset-1,0),len(self._vehicles)-1)
+                        self._carInfoOffset = min(max(self._carInfoOffset-1, 0), len(self._vehicles)-1)
                 if event.type == pygame.MOUSEWHEEL:
                     carInfoOffset = min(
                         max(carInfoOffset + event.y, 0),
                         len(self._vehicles)-1
                     )
             
-            if(Ui.get_size() != self.UiSurf.get_size()):
-                Ui = pygame.display.set_mode(self.UiSurf.get_size(),pygame.SCALED)
-            Ui.blit(self.UiSurf,(0,0))
-            Ui.blit(self._ControlButtonSurf,(0,0))
-            Ui.blit(self._ScrollSurf,(self._visMapSurf.get_width()-self._ScrollSurf.get_width(),0))
+            if Ui.get_size() != self.UiSurf.get_size():
+                Ui = pygame.display.set_mode(self.UiSurf.get_size(), pygame.SCALED)
+            Ui.blit(self.UiSurf, (0, 0))
+            Ui.blit(self._ControlButtonSurf, (0, 0))
+            Ui.blit(self._ScrollSurf, (self._visMapSurf.get_width()-self._ScrollSurf.get_width(), 0))
             
             pygame.display.update()
             clock.tick(self.fps)
@@ -396,26 +406,29 @@ class Ui:
     #methods for user interaction
     def kill(self):
         self._run = False
-    def addEvent(self, text:str, color:tuple[int,int,int]|None=None):
+    def addEvent(self, text: str, color: tuple[int, int, int]|None = None):
         if self._eventSurf is None:
             warnings.warn("Ui.addEvent called before Ui was initialized", RuntimeWarning)
             return
         event = self._font.render(
             text,
             True,
-            color if color != None else (0,0,0),
+            color if color != None else (0, 0, 0),
             self._design.EventFill
         )
         #The lines between messages when using outlines apear due to using scroll 
         # this is seen as a feature
         self._eventSurf.scroll(dy=event.get_height())
-        pygame.draw.rect(self._eventSurf,self._design.EventFill,
-                         (0,0,self._eventSurf.get_width(),event.get_height()))
+        pygame.draw.rect(
+            self._eventSurf,
+            self._design.EventFill,
+            (0, 0, self._eventSurf.get_width(), event.get_height())
+        )
         self._eventSurf.blit(event, (10, 0))
     def getUiSurf(self, surf: pygame.Surface|None=None) -> pygame.Surface: 
         return self.updateUi(0, surf or self.UiSurf)
     def getCarSurfs(self) -> list[pygame.Surface]:
-        return [self.carInfo(self._vehicles[i],i) for i in range(len(self._vehicles)) ]
+        return [self.carInfo(self._vehicles[i], i) for i in range(len(self._vehicles)) ]
     def getMapsurf(self) -> pygame.Surface:
         return self._visMapSurf
     def getCarsOnMap(self) -> pygame.Surface:
@@ -443,14 +456,14 @@ class Ui:
     
     def addVehicle(
             self,
-            Vehicle:anki.Vehicle,
-            VehicleColor: tuple[int,int,int]|None=None
+            vehicle: anki.Vehicle,
+            vehicleColor: tuple[int,int,int]|None = None
         ):
-        self._vehicles.append(Vehicle)
-        if VehicleColor is None:
+        self._vehicles.append(vehicle)
+        if vehicleColor is None:
             self._accumulatedVehicleColors.append(next(self._vehicleColorIterator))
         else:
-            self._accumulatedVehicleColors.append(VehicleColor)
+            self._accumulatedVehicleColors.append(vehicleColor)
     
     def removeVehicle(self,index: int):
         self._vehicles.pop(index)
