@@ -83,7 +83,6 @@ class Ui:
         self._visMapSurf: pygame.Surface
         self._ControlButtonSurf: pygame.Surface
         self._ScrollSurf: pygame.Surface
-        self._rects: tuple[pygame.rect.Rect,pygame.rect.Rect,pygame.rect.Rect]
         #starting ui
         self._thread = threading.Thread(target=self._UiThread,daemon=True)
         self._run = True
@@ -308,8 +307,7 @@ class Ui:
         ScrollSurf.blit(UpArrow,(0,0))
         ScrollSurf.blit(DownArrow,(0,UpArrow.get_height()))
         
-        self._rects = (BtnRect,UpRect,DownRect)
-        return (Button,ScrollSurf)
+        return (Button,ScrollSurf), (BtnRect, UpRect, DownRect)
     
     
     def updateUi(self):
@@ -352,7 +350,7 @@ class Ui:
             Logo = load_image("logo.png")
             pygame.display.set_icon(Logo)
             pygame.display.set_caption("Anki Ui Access")
-            self._ControlButtonSurf, self._ScrollSurf = self.gen_Buttons()
+            ((self._ControlButtonSurf, self._ScrollSurf), rects) = self.gen_Buttons()
             Ui = pygame.display.set_mode(uiSize, pygame.SCALED)
         self.UiSurf = pygame.surface.Surface(uiSize)
         
@@ -365,11 +363,11 @@ class Ui:
                 if event.type == pygame.QUIT:
                     self._run = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self._rects[0].collidepoint(pygame.mouse.get_pos()):
+                    if rects[0].collidepoint(pygame.mouse.get_pos()):
                         self.startControler()
-                    if self._rects[1].collidepoint(pygame.mouse.get_pos()):
+                    if rects[1].collidepoint(pygame.mouse.get_pos()):
                         self._carInfoOffset = min(max(self._carInfoOffset+1,0),len(self._vehicles)-1)
-                    if self._rects[2].collidepoint(pygame.mouse.get_pos()):
+                    if rects[2].collidepoint(pygame.mouse.get_pos()):
                         self._carInfoOffset = min(max(self._carInfoOffset-1,0),len(self._vehicles)-1)
                 if event.type == pygame.MOUSEWHEEL:
                     self._carInfoOffset = min(
