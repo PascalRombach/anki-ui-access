@@ -82,6 +82,7 @@ class Ui:
         self._visMapSurf: pygame.Surface
         self._ControlButtonSurf: pygame.Surface
         self._ScrollSurf: pygame.Surface
+        self._rects: tuple[pygame.rect.Rect,pygame.rect.Rect,pygame.rect.Rect]
         #starting ui
         self._thread = threading.Thread(target=self._UiThread,daemon=True)
         self._run = True
@@ -311,7 +312,7 @@ class Ui:
         ScrollSurf.blit(UpArrow,(0,0))
         ScrollSurf.blit(DownArrow,(0,UpArrow.get_height()))
         
-        return (Button,ScrollSurf), (BtnRect, UpRect, DownRect)
+        return (Button,ScrollSurf), (BtnRect,UpRect,DownRect)
     
     
     def updateUi(self, carInfoOffset: int):
@@ -354,7 +355,7 @@ class Ui:
             Logo = load_image("logo.png")
             pygame.display.set_icon(Logo)
             pygame.display.set_caption("Anki Ui Access")
-            ((self._ControlButtonSurf, self._ScrollSurf), rects) = self.genButtons()
+            ((self._ControlButtonSurf, self._ScrollSurf), self._rects) = self.genButtons()
             Ui = pygame.display.set_mode(uiSize, pygame.SCALED)
         self.UiSurf = pygame.surface.Surface(uiSize)
         carInfoOffset = 0
@@ -368,12 +369,12 @@ class Ui:
                 if event.type == pygame.QUIT:
                     self._run = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if rects[0].collidepoint(pygame.mouse.get_pos()):
+                    if self._rects[0].collidepoint(pygame.mouse.get_pos()):
                         self.startVehicleControlUI()
-                    if rects[1].collidepoint(pygame.mouse.get_pos()):
-                        carInfoOffset = min(max(carInfoOffset+1,0),len(self._vehicles)-1)
-                    if rects[2].collidepoint(pygame.mouse.get_pos()):
-                        carInfoOffset = min(max(carInfoOffset-1,0),len(self._vehicles)-1)
+                    if self._rects[1].collidepoint(pygame.mouse.get_pos()):
+                        self._carInfoOffset = min(max(self._carInfoOffset+1,0),len(self._vehicles)-1)
+                    if self._rects[2].collidepoint(pygame.mouse.get_pos()):
+                        self._carInfoOffset = min(max(self._carInfoOffset-1,0),len(self._vehicles)-1)
                 if event.type == pygame.MOUSEWHEEL:
                     carInfoOffset = min(
                         max(carInfoOffset + event.y, 0),
@@ -427,7 +428,7 @@ class Ui:
             (self._visMapSurf.get_width() + self.getCarSurfs()[0].get_width(),
                 self._visMapSurf.get_height() + self._design.ConsoleHeight))
         if(self.showUi):
-            self._ControlButtonSurf, self._ScrollSurf = self.genButtons()
+            ((self._ControlButtonSurf, self._ScrollSurf), self._rects) = self.genButtons()
         
         old_eventSurf = self._eventSurf
         # TODO: Fix code duplication with _UiThread
