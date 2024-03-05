@@ -315,11 +315,11 @@ class Ui:
         return (Button,ScrollSurf), (BtnRect,UpRect,DownRect)
     
     
-    def updateUi(self, carInfoOffset: int):
-        self.UiSurf.fill(self._design.Background)
-        self.UiSurf.blit(self._visMapSurf,(0,0))
+    def updateUi(self, carInfoOffset: int, surf: pygame.Surface):
+        surf.fill(self._design.Background)
+        surf.blit(self._visMapSurf,(0,0))
         
-        self.UiSurf.blit(self._eventSurf,(0,self._visMapSurf.get_height()))
+        surf.blit(self._eventSurf,(0,self._visMapSurf.get_height()))
         if self._design.ShowOutlines:
             pygame.draw.rect(
                 self._eventSurf,
@@ -331,12 +331,13 @@ class Ui:
         carInfoSurfs = self.getCarSurfs()
         carInfoSurfs = carInfoSurfs[carInfoOffset:]
         for i, carInfoSurf in enumerate(carInfoSurfs):
-            self.UiSurf.blit(carInfoSurf,(self._visMapSurf.get_width(),carInfoSurf.get_height()*i))
+            surf.blit(carInfoSurf,(self._visMapSurf.get_width(),carInfoSurf.get_height()*i))
         
         if(self._design.ShowCarNumOnMap):
-            self.UiSurf.blit(self.carOnMap(),(0,0))
+            surf.blit(self.carOnMap(),(0,0))
         if(self._design.ShowCarOnStreet):
-            self.UiSurf.blit(self.carOnStreet(),(0,0))
+            surf.blit(self.carOnStreet(),(0,0))
+        return surf
     
     #The Code that showeth the Ui (:D)
     def _UiThread(self):
@@ -363,7 +364,7 @@ class Ui:
         self._uiSetupComplete.set_result(True)
         clock = pygame.time.Clock()
         while(self._run and self.showUi):
-            self.updateUi(carInfoOffset)
+            self.updateUi(carInfoOffset, self.UiSurf)
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -411,9 +412,8 @@ class Ui:
         pygame.draw.rect(self._eventSurf,self._design.EventFill,
                          (0,0,self._eventSurf.get_width(),event.get_height()))
         self._eventSurf.blit(event, (10, 0))
-    def getUiSurf(self) -> pygame.Surface: 
-        self.updateUi()
-        return self.UiSurf
+    def getUiSurf(self, surf: pygame.Surface|None=None) -> pygame.Surface: 
+        return self.updateUi(0, surf or self.UiSurf)
     def getCarSurfs(self) -> list[pygame.Surface]:
         return [self.carInfo(self._vehicles[i],i) for i in range(len(self._vehicles)) ]
     def getMapsurf(self) -> pygame.Surface:
